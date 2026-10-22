@@ -123,9 +123,9 @@ workflow_generation:
       remaining_blockers: []
     security:
       status: conditional
-      approved_by: TBD
-      approved_at: TBD
-      evidence: SEC-2026-0090 draft memo
+      approved_by: CompleteTech security reviewer
+      approved_at: 2026-06-09
+      evidence: SEC-2026-0090 signoff memo (conditional go)
       permits:
         - sandbox evaluation
         - draft-and-recommend support replies for human review
@@ -144,12 +144,28 @@ workflow_generation:
     public_proof:
       status: approved
       approved_by: Jordan Lee
-      approved_at: TBD
+      approved_at: 2026-06-05
       evidence: named proof approval CASE-2026-007
       permits:
         - approved named case study without raw ticket text
       remaining_blockers:
         - do not identify customer accounts
+    billing:
+      status: draft
+      approved_by: TBD
+      approved_at: TBD
+      evidence: draft prototype-milestone invoice
+      permits: []
+      remaining_blockers:
+        - billing approval route still draft
+    client_authority:
+      status: unknown
+      approved_by: TBD
+      approved_at: TBD
+      evidence: TBD
+      permits: []
+      remaining_blockers:
+        - sponsor authority over refund recommendation scope not yet confirmed
 
   approval_history:
     - date: 2026-05-30
@@ -158,10 +174,16 @@ workflow_generation:
       actor: Jordan Lee
       evidence: PRO-2026-0188 approved for support triage
       notes: refund recommendations not included
+    - date: 2026-06-05
+      gate: public_proof
+      status: approved
+      actor: Jordan Lee
+      evidence: CASE-2026-007
+      notes: named case study approved without raw ticket text or customer account identifiers
     - date: 2026-06-09
       gate: security
       status: conditional
-      actor: TBD
+      actor: CompleteTech security reviewer
       evidence: SEC-2026-0090
       notes: launch blocked until retention policy and security contact are confirmed
 
@@ -213,16 +235,21 @@ workflow_generation:
       decision: keep pilot sandboxed and request missing security evidence
       evidence: retention policy and security contact missing
       notes: no refund tools, external sends, or production launch until gates are current
+    - event_id: EVT-2026-0004
+      type: track_started
+      actor: CompleteTech engagement lead
+      timestamp: 2026-06-09T10:35:00-04:00
+      related_artifact: SEC-2026-0090
+      related_track: TRACK-SECURITY-001
+      decision: open security-review overlay track for refund-policy data and tool permissions
+      evidence: approval/risk triage selected security review for the expanded scope only
+      notes: security review is an overlay track and gate, not a lifecycle stage transition
 
   state_transitions:
     - from: delivery
       to: proposal
       when: delivery uncovered refund recommendation scope outside approved pilot
       rationale: CompleteTech adapter routes new scope to proposal/change-order before delivery expansion
-    - from: delivery
-      to: security_review
-      when: refund-policy data and tool permissions may introduce security-sensitive risk
-      rationale: approval/risk triage selected security review for the expanded scope only
 
   provider:
     legal_name: CompleteTech LLC
@@ -692,6 +719,9 @@ project_state:
 | Security approval | `security_review.security_decision`, `security_review.required_before_launch`, `security_review.residual_risks` | Production launch, external tool actions |
 | External send approval | `email.recipient_email`, `email.subject`, `email.send_status`, `email.external_send_approval` | Sending email or package externally |
 | Public proof approval | `case_study.approval_status`, `case_study.attribution_allowed`, `case_study.quote_approver`, `case_study.confidentiality_constraints` | Public case study, named quote, proof reuse |
+| Client authority approval | `client.sponsor_name`, `client.signatory_name`, `approvals.client_authority` | Acting on a stakeholder decision whose authority is unclear |
+
+Each gate is recorded under `approvals.<approval_field>` (see `gates` in the adapter): `commercial`, `legal_or_contract`, `billing`, `security`, `external_send` (gate `recipient_or_external_send`), `public_proof` and `client_authority`. `scripts/validate_state.py` checks these records, with approver and ISO date, before gated transitions and `--action` steps.
 
 ## Minimal Required Variables For A Full Run
 

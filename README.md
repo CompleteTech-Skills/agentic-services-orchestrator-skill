@@ -18,7 +18,7 @@ Part of the CompleteTech LLC agentic services skill library. This skill coordina
 ## OpenClaw / ClawHub Metadata
 
 - Skill key: `agentic-services-orchestrator-skill`
-- Version-ready metadata: `1.0.3`
+- Version-ready metadata: `1.1.0`
 - Homepage: https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill
 - README: https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill#readme
 - Runtime binaries: `python3`
@@ -76,6 +76,7 @@ flowchart LR
 - `agents/openai.yaml` - OpenAI agent metadata.
 - `assets/diagrams/orchestration-workflow.mmd` - Mermaid source for the orchestration workflow diagram.
 - `references/workflow-definition-schema.yaml` - universal workflow adapter schema and validation rules.
+- `scripts/validate_state.py` - read-only check of a `project_state` file against its adapter: allowed transitions, gate approvals with approver and date, and `--action` checks before gated steps. It is a check the agent runs, not a runtime guard.
 - `references/completetech-services-workflow.yaml` - default CompleteTech services workflow adapter.
 - `references/hiring-pipeline-workflow.yaml` - small non-services adapter example.
 - `references/orchestration-architecture.md` - universal architecture, adapter model, responsibility matrix, and examples.

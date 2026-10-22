@@ -16,6 +16,10 @@ workflow_definition_schema:
     - recovery_actions
     - required_fields
     - terminal_states
+  optional_top_level_fields:
+    - gated_actions
+    - support_outputs
+    - validation_rules
 
   primitives:
     workflow_type:
@@ -39,6 +43,8 @@ workflow_definition_schema:
     gate:
       description: Approval, risk, policy, quality, compliance, or human-authority checkpoint.
       required_fields: [gate_id, owner, applies_when, approval_states]
+      optional_fields:
+        approval_field: Key under project_state.approvals that records this gate; defaults to gate_id.
     dependency:
       description: Condition, artifact, approval, fact, or external event needed before a transition or action.
       required_fields: [dependency_id, needed_for, status]
@@ -48,6 +54,11 @@ workflow_definition_schema:
     state_transition:
       description: Allowed movement between stages/tracks/statuses under specified conditions.
       required_fields: [from, to, when]
+      optional_fields:
+        requires_gates: Gate ids that must be approved, conditional, or partial (with approver and date) before this transition.
+    gated_action:
+      description: Named action (send, invoice, publish, launch) that requires gate approval before it runs.
+      required_fields: [action, requires_gates]
     recovery_action:
       description: Smallest useful safe action when a request is blocked or underspecified.
       required_fields: [id, applies_when, output]
@@ -84,6 +95,7 @@ workflow_definition_schema:
     default: false
     stages: []
     allowed_transitions: []
+    gated_actions: []
     artifacts: []
     specialist_owners: {}
     gates: []
@@ -113,3 +125,7 @@ workflow_definition_schema:
       description: Terminal states cannot have open blockers unless terminal_state allows unresolved closure.
     - id: external_action_without_approval_evidence
       description: External send, launch, payment request, public proof, or production-impacting action needs approval evidence.
+    - id: approval_without_attribution
+      description: An approved, conditional, or partial approval must record approved_by and an ISO approved_at date.
+    - id: missing_approval_record
+      description: Every gate in the workflow definition needs a record under project_state.approvals, even if its status is unknown.

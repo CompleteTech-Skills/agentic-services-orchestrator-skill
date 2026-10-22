@@ -6,7 +6,8 @@
   "kind": "orchestrator",
   "entrypoints": [
     "scripts/render_pdf.py",
-    "scripts/skill_library.py"
+    "scripts/skill_library.py",
+    "scripts/validate_state.py"
   ],
   "example_inputs": [
     "references/completetech-services-workflow.yaml",
