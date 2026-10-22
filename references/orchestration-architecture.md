@@ -109,7 +109,7 @@ project_state:
       evidence: TBD
       permits: []
       remaining_blockers: []
-    external_send:
+    external_send:  # record for the recipient_or_external_send gate
       status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
       approved_by: TBD
       approved_at: TBD
@@ -117,6 +117,20 @@ project_state:
       permits: []
       remaining_blockers: []
     public_proof:
+      status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
+      approved_by: TBD
+      approved_at: TBD
+      evidence: TBD
+      permits: []
+      remaining_blockers: []
+    billing:
+      status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
+      approved_by: TBD
+      approved_at: TBD
+      evidence: TBD
+      permits: []
+      remaining_blockers: []
+    client_authority:
       status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
       approved_by: TBD
       approved_at: TBD

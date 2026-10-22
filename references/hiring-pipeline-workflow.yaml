@@ -39,6 +39,7 @@ allowed_transitions:
   - from: interview
     to: offer
     when: scorecards and hiring manager approval are current
+    requires_gates: [hiring_manager_approval]
   - from: offer
     to: onboarding
     when: offer is accepted and start details are verified
@@ -97,6 +98,12 @@ gates:
     owner: privacy_or_security_owner
     category: security_sensitive
     applies_when: sensitive candidate data, background-check handling, system access, or regulated data is involved
+
+gated_actions:
+  - action: extend_offer
+    requires_gates: [hiring_manager_approval, compensation_approval, legal_or_hr_approval]
+  - action: start_background_check
+    requires_gates: [privacy_or_security_review]
 
 approval_states:
   - unknown
@@ -163,3 +170,5 @@ validation_rules:
   - unresolved_conflict
   - terminal_state_with_open_blockers
   - external_action_without_approval_evidence
+  - approval_without_attribution
+  - missing_approval_record

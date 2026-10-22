@@ -124,6 +124,19 @@ def validate_mermaid(skip: bool) -> None:
     print("mermaid ok")
 
 
+def validate_example_states() -> None:
+    validator = ROOT / "scripts" / "validate_state.py"
+    example = ROOT / "references" / "full-workflow-variables.yaml"
+    if not validator.exists() or not example.exists():
+        print("state validation skipped: validator or example state missing")
+        return
+    run([sys.executable, str(validator), str(example)])
+    tests = ROOT / "tests" / "test_package_state.py"
+    if tests.exists():
+        run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", tests.name])
+    print("example state ok")
+
+
 def smoke_generators() -> None:
     print("generator smoke skipped: services orchestrator has no generate_*.py entry points")
 
@@ -288,6 +301,7 @@ def main() -> int:
     run_ruff()
     parse_structured_files()
     validate_mermaid(args.skip_mermaid)
+    validate_example_states()
     smoke_generators()
     smoke_catalog_renderers()
     run_pyright()

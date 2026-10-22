@@ -2,7 +2,7 @@
 name: agentic-services-orchestrator-skill
 description: >-
   Coordinate schema-driven workflows across configurable domains using workflow definitions, adapters, active tracks, artifact versions, approval/risk triage, event logs, validation, and recovery actions. Use the CompleteTech LLC agentic services workflow as the default adapter for discovery, proposal, contract, delivery, customer success, invoice, certificate, case study, email, envelope, and security-review work.
-version: 1.0.3
+version: 1.1.0
 metadata:
   openclaw:
     skillKey: agentic-services-orchestrator-skill
@@ -35,7 +35,7 @@ This skill owns workflow definition loading, routing policy, project state, even
 
 ## Runtime Permissions
 
-This skill is a local workflow-orchestration and document-rendering workflow. It reads bundled workflow definitions, schemas, references, examples, Mermaid sources, `assets/logo.png`, and user-provided project-state/workflow facts. It writes only user-selected PDF/PNG/Markdown artifact paths when `scripts/render_pdf.py` is explicitly run.
+This skill is a local workflow-orchestration and document-rendering workflow. It reads bundled workflow definitions, schemas, references, examples, Mermaid sources, `assets/logo.png`, and user-provided project-state/workflow facts. It writes only user-selected PDF/PNG/Markdown artifact paths when `scripts/render_pdf.py` is explicitly run. `scripts/validate_state.py` only reads a project_state file and a workflow definition and prints violations.
 
 It does not send emails, call external workflow systems, call Mautic or other CRMs, contact certificate services, require credential access, create persistence, escalate privileges, perform destructive file operations, or run background services.
 
@@ -80,7 +80,7 @@ Overlay/gate: Security Review. Security is not the default gate for every workfl
 7. Route by requested outcome, current stage/track, artifact versions, missing facts, conflicts, dependencies, approvals, risk/approval triage, urgency, owner, allowed transitions, and domain adapter rules.
 8. Run approval/risk triage. Invoke security review only for security-sensitive triggers; otherwise use the relevant commercial, legal, billing, recipient, proof, client-authority, or domain-specific approval gate.
 9. Append a relevant event for material state changes, such as artifact revision, approval change, blocker update, owner change, decision, track start/close, or recovery action.
-10. Validate state before final output or external action. Stop or recover if there are invalid transitions, missing owners, orphaned blockers, stale approvals, unversioned artifacts, bypassed gates without rationale, unresolved conflicts, terminal states with open blockers, or external actions without approval evidence.
+10. Run `scripts/validate_state.py` (see State Validation) and validate state before final output or external action. Stop or recover if there are invalid transitions, missing owners, orphaned blockers, stale approvals, unversioned artifacts, bypassed gates without rationale, unresolved conflicts, terminal states with open blockers, or external actions without approval evidence.
 11. Return a handoff package with workflow type, artifact paths, version relationships, decisions, unresolved questions, blockers, approvals, latest events, next owner, next decision needed, and next recommended skill.
 
 ## Skill Invocation Rules
@@ -173,7 +173,7 @@ project_state:
       evidence: TBD
       permits: []
       remaining_blockers: []
-    external_send:
+    external_send:  # record for the recipient_or_external_send gate
       status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
       approved_by: TBD
       approved_at: TBD
@@ -181,6 +181,20 @@ project_state:
       permits: []
       remaining_blockers: []
     public_proof:
+      status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
+      approved_by: TBD
+      approved_at: TBD
+      evidence: TBD
+      permits: []
+      remaining_blockers: []
+    billing:
+      status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
+      approved_by: TBD
+      approved_at: TBD
+      evidence: TBD
+      permits: []
+      remaining_blockers: []
+    client_authority:
       status: unknown|draft|requested|partial|approved|rejected|expired|superseded|blocked|conditional
       approved_by: TBD
       approved_at: TBD
@@ -242,7 +256,17 @@ Before creating an artifact, check whether an existing artifact should be revise
 
 ## State Validation
 
-Use `references/workflow-definition-schema.yaml` validation rules before final output, external action, or terminal state. Stop or recover when there are invalid transitions, missing owners, orphaned blockers, stale approvals, artifacts without source/version, gates bypassed without rationale, unresolved conflicts, terminal states with open blockers, or external actions without approval evidence.
+Use `references/workflow-definition-schema.yaml` validation rules before final output, external action, or terminal state.
+
+Before any stage transition the adapter gates (`requires_gates`) and before any gated action (contract send, delivery start, invoice issuance or payment request, external send, proof publication, production launch, external tool action, acting on delegated authority), write the current `project_state` to a file and run:
+
+```bash
+python3 scripts/validate_state.py project_state.yaml --action external_send
+```
+
+Pass one `--action` per gated action about to run; ids come from `gated_actions` in the adapter. The script is local, read-only and deterministic. It exits `1` and prints one `VIOLATION [rule]` line per problem when a recorded transition is not in `allowed_transitions`, a gate required by a transition or action is not `approved`/`conditional`/`partial`, an authorizing approval lacks `approved_by` or an ISO `approved_at` date, a `conditional`/`partial` approval's `permits` do not list the requested action, a gate has no record under `approvals` (the record key is the gate's `approval_field`, so `recipient_or_external_send` is recorded under `external_send`), or tracks, artifacts or terminal states break the schema. Exit `2` means the file could not be read. On any non-zero exit, do not perform the gated step; report the violations and select a recovery action. Do not edit the state to make the check pass unless the underlying approval evidence actually exists.
+
+Limits: this is a check the agent runs, not a runtime guard. Nothing in this package can stop an agent that skips the script, misrecords an approval, or acts through another tool, and a passing run does not prove the recorded approver had authority or that the evidence is genuine. Treat a pass as necessary, not sufficient; the human approval gates still apply. Stop or recover when there are invalid transitions, missing owners, orphaned blockers, stale approvals, artifacts without source/version, gates bypassed without rationale, unresolved conflicts, terminal states with open blockers, or external actions without approval evidence.
 
 ## Escalation and Recovery
 

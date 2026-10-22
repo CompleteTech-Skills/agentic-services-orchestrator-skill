@@ -41,9 +41,11 @@ allowed_transitions:
   - from: proposal
     to: contract
     when: commercial approval is approved or conditional within listed limits
+    requires_gates: [commercial]
   - from: contract
     to: delivery
     when: legal/signature and kickoff authority are clear
+    requires_gates: [legal_or_contract]
   - from: delivery
     to: customer_success
     when: handoff, support, closeout, renewal, expansion, or advocacy is needed
@@ -125,33 +127,64 @@ specialist_owners:
 
 gates:
   - gate_id: commercial
+    approval_field: commercial
     owner: client commercial approver
     category: non_security
     applies_when: pricing, scope, assumptions, exclusions, acceptance criteria, or change order authorize work
   - gate_id: legal_or_contract
+    approval_field: legal_or_contract
     owner: legal/signatory authority
     category: non_security
     applies_when: contract send, signature, legal commitment, or delivery start depends on legal authority
   - gate_id: billing
+    approval_field: billing
     owner: billing/accounting approver
     category: non_security
     applies_when: invoice issuance, payment request, credits, receipts, taxes, purchase orders, or payment instructions are involved
   - gate_id: recipient_or_external_send
+    approval_field: external_send
     owner: sender/client contact authority
     category: non_security
     applies_when: email, envelope, attachment package, or external send is requested
   - gate_id: public_proof
+    approval_field: public_proof
     owner: client proof approver
     category: non_security
     applies_when: case study, named quote, testimonial, public reference, or proof reuse is requested
   - gate_id: client_authority
+    approval_field: client_authority
     owner: account sponsor or delegated owner
     category: non_security
     applies_when: stakeholder authority, owner, or decision source is unclear
   - gate_id: security
+    approval_field: security
     owner: security reviewer
     category: security_sensitive
     applies_when: sensitive data, credentials, permissions, new tools, production impact, incidents, or confidentiality risk appear
+
+# Actions that may only run after the listed gates authorize them. The record
+# for each gate is project_state.approvals.<approval_field>. `approved` permits
+# the action; `conditional` or `partial` permit it only when the action id is
+# listed in that approval's `permits`. Checked by scripts/validate_state.py.
+gated_actions:
+  - action: send_contract
+    requires_gates: [legal_or_contract, recipient_or_external_send]
+  - action: start_delivery
+    requires_gates: [commercial, legal_or_contract]
+  - action: issue_invoice
+    requires_gates: [billing]
+  - action: request_payment
+    requires_gates: [billing]
+  - action: external_send
+    requires_gates: [recipient_or_external_send]
+  - action: publish_proof
+    requires_gates: [public_proof]
+  - action: production_launch
+    requires_gates: [security]
+  - action: external_tool_action
+    requires_gates: [security]
+  - action: act_on_delegated_authority
+    requires_gates: [client_authority]
 
 approval_states:
   - unknown
@@ -241,3 +274,5 @@ validation_rules:
   - unresolved_conflict
   - terminal_state_with_open_blockers
   - external_action_without_approval_evidence
+  - approval_without_attribution
+  - missing_approval_record
