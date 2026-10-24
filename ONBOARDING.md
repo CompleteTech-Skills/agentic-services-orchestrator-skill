@@ -2,7 +2,7 @@
 
 <p align="center"><img src="assets/logo.png" alt="CompleteTech LLC logo" width="260"></p>
 
-**CompleteTech LLC Skills** — Lifecycle routing and approval-aware handoffs.
+**CompleteTech LLC Skills** — Workflow coordination and bounded execution supervision.
 
 [Overview](README.md) · [Agent instructions](SKILL.md) · [Contributing](CONTRIBUTING.md) · [Skill library](https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill/blob/main/references/skill-family.md)
 
@@ -33,7 +33,7 @@ Run from the skill root. The commands below use bundled synthetic/example inputs
 python scripts/render_pdf.py --markdown assets/examples/example.md --out output/onboarding-demo.pdf --logo assets/logo.png --title "Orchestration demonstration"
 ```
 
-The bundled orchestration overview renders to `output/onboarding-demo.pdf`. For actual routing, load `references/completetech-services-workflow.yaml` and follow `SKILL.md`; generating this PDF does not execute a workflow or approve a transition.
+The bundled orchestration overview renders to `output/onboarding-demo.pdf`; generating this PDF does not execute a workflow or approve a transition. For executable coordination, start with `python scripts/orchestration.py --help` and the synthetic [working examples](examples/README.md). The [migration guide](references/migration.md) explains importing existing `project_state` facts and explicit transition policy. The local core and handoffs require neither Herdr nor a Git repository.
 
 Open the generated output and inspect page breaks, tables, logo, text and any remaining placeholders. Package validation checks structure; it does not certify visual quality or factual correctness. Committed previews in `assets/examples/` are references, not destinations for your first run.
 
@@ -45,19 +45,19 @@ Read [SKILL.md](SKILL.md), select `agentic-services-orchestrator-skill` using yo
 
 Use the existing CompleteTech LLC logo and the practical, evidence-led voice described in [README.md](README.md). The code license does not grant logo, seal or signature rights: follow [BRAND_ASSETS.md](BRAND_ASSETS.md). Do not replace or republish private artwork or fonts.
 
-For a multi-skill handoff, preserve the source facts, artifact paths, approval owner/status, blockers and next specialist in the orchestrator's existing `project_state` schema. Do not treat a generated artifact, anonymization or successful check as permission to send, publish, bill, sign, award or launch.
+For a multi-skill handoff, preserve the source facts, artifact paths, approval owner/status, blockers and next specialist in the orchestrator's existing `project_state` schema. Executable assignments add stable IDs, revisions and approval references while keeping workflow state authoritative. JSON contracts and SQLite state are operational artifacts; branded PDFs are for appropriate human-facing documents. Do not treat a generated artifact, anonymization or successful check as permission to send, publish, bill, sign, award or launch.
 
 ## Safety and permissions
 
-The documented generation workflow is local. Installation may contact GitHub and package indexes, but generation does not send messages, move money, publish documents, grant approval or install background services. Review the specialist boundaries in [SKILL.md](SKILL.md) before using real inputs.
+Workflow processing, validation, handoff preparation, and document rendering are local. The coordinator writes a selected SQLite store outside Git checkouts; adapters write selected private bundles outside installed skill checkouts or call explicitly supplied native controls. Native callbacks and selected Herdr session controls may access authorized external services. Installation may contact GitHub and package indexes. No component installs background services or schedules. Review the component boundary table in [architecture](references/orchestration-architecture.md) before using real inputs, and keep credentials/private state outside version-controlled workspaces.
 
 ## Troubleshooting and verification
 
 A missing module usually means the active interpreter differs from the one used for `pip`; use `python -m pip` in the same environment and this repository's `requirements.txt`. Missing logos or references usually indicate a partial/text-only installation or the wrong working directory; use a full checkout and run from its root. Do not download replacement branding from unrelated sources.
 
 ```bash
-python -m unittest discover -s tests -p test_package_contract.py -v
+python -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/validate_package.py
 ```
 
-These checks use the standard library and do not execute the listed generators, scan accounts, contact services or install schedules. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and the repository's existing quality instructions for the additional runtime, rendering, parser and diagram checks.
+Package-only checks use the standard library; orchestration checks use the pinned schema/YAML dependencies. The suite uses synthetic fixtures and does not scan accounts, run client workflows, contact live services, or install schedules. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [QUALITY.md](QUALITY.md) for the additional lint, rendering, parser and diagram checks.

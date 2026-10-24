@@ -1,0 +1,130 @@
+# Domain policy; independent of the selected native, handoff, or Herdr runtime.
+workflow_type: software_delivery
+label: Software Delivery
+default: false
+schema_version: 1.0.0
+
+stages:
+  - id: implementation
+    label: Implementation
+    purpose: Produce bounded changes and local validation evidence from approved scope.
+  - id: review
+    label: Review
+    purpose: Obtain independent review of the exact artifact revision.
+  - id: checks
+    label: Checks
+    purpose: Verify configured checks at the final artifact revision.
+  - id: delivery
+    label: Delivery
+    purpose: Reach the explicitly configured local, PR, merge, or deployment endpoint.
+
+allowed_transitions:
+  - from: implementation
+    to: review
+    when: implementation output and local checks are available
+  - from: review
+    to: checks
+    when: an independent reviewer accepts the exact revision
+  - from: checks
+    to: delivery
+    when: checks pass and requested endpoint authority and evidence are current
+  - from: review
+    to: implementation
+    when: review requires changes
+  - from: checks
+    to: implementation
+    when: checks fail and corrections are authorized
+
+artifacts:
+  - artifact_type: implementation
+    owner: implementer
+    version_policy: preserve exact commit or local content revision and scope
+  - artifact_type: review
+    owner: independent_reviewer
+    version_policy: bind review to the artifact revision; reevaluate after relevant changes
+  - artifact_type: check_report
+    owner: execution_supervisor
+    version_policy: pin check results to exact revision and distinguish local from hosted checks
+  - artifact_type: delivery_receipt
+    owner: execution_supervisor
+    version_policy: record operation ID and verified endpoint state for the exact revision
+
+specialist_owners:
+  implementation: implementer
+  review: independent_reviewer
+  checks: execution_supervisor
+  delivery: delivery_owner
+
+gates:
+  - gate_id: implementation_authority
+    owner: workflow_owner
+    category: business
+    applies_when: assignment scope changes or new implementation is requested
+  - gate_id: artifact_acceptance
+    owner: independent_reviewer
+    category: artifact
+    applies_when: exact implementation revision is accepted for delivery
+  - gate_id: merge_authority
+    owner: repository_authority
+    category: merge
+    applies_when: the configured endpoint merges repository changes
+  - gate_id: deployment_authority
+    owner: environment_authority
+    category: deployment
+    applies_when: the configured endpoint deploys to an environment
+
+approval_states: [unknown, draft, requested, partial, approved, rejected, expired, superseded, blocked, conditional]
+routing_rules:
+  - id: changes_requested
+    when: independent review requests changes
+    action: return a bounded correction assignment to implementation without changing business authority
+  - id: failed_checks
+    when: a required check fails
+    action: keep delivery blocked; preserve the failure evidence and reconcile before recovery
+  - id: endpoint_scope
+    when: a PR, merge, or deployment is requested
+    action: bind the assignment to that endpoint and its existing approval provenance; verify remote state
+
+recovery_actions:
+  - id: reconcile_owner
+    applies_when: an agent stops or dispatch outcome is uncertain
+    output: preserved assignment with live owner observation and resolved external receipts before retry
+  - id: bounded_correction
+    applies_when: review or checks fail within authorized scope
+    output: correction assignment linked to the original artifacts and failure evidence
+  - id: external_blocker
+    applies_when: credentials, authority, hosted checks, or environment access are unavailable
+    output: precise blocker, owner, pending action, and retained endpoint
+
+required_fields: [requested_outcome, owner]
+terminal_states:
+  - id: closed
+    allows_open_blockers: false
+validation_rules:
+  - invalid_transition
+  - stale_approval
+  - terminal_state_with_open_blockers
+  - external_action_without_approval_evidence
+
+# Assignment endpoint and result evidence carry repository-specific information.
+# Merge/deployment authority is additionally enforced for those endpoint types;
+# neither an implementation result nor a PR receipt grants it.
+execution_rules:
+  - from: implementation
+    to: review
+    required_approvals: []
+    required_facts: []
+    required_checks: [local_checks]
+    independent_review: false
+  - from: review
+    to: checks
+    required_approvals: [artifact_acceptance]
+    required_facts: []
+    required_checks: [local_checks]
+    independent_review: true
+  - from: checks
+    to: delivery
+    required_approvals: [artifact_acceptance]
+    required_facts: []
+    required_checks: [delivery_checks]
+    independent_review: true

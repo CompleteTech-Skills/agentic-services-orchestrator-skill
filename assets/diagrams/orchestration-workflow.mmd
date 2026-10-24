@@ -1,27 +1,10 @@
 flowchart LR
-  A[Request, artifact, or client change] --> B[Load workflow definition / adapter]
-  B --> C[Update project_state]
-  C --> D{Route by policy}
-  D --> E[Active tracks]
-  E --> F[Specialist or adapter action]
-  F --> G{Approval / risk triage}
-  G -->|No gate needed| H[Event log]
-  G -->|Owner approval needed| I[Applicable owner approval]
-  G -->|Security-sensitive| J[Security review]
-  I -->|Approved within limits| H
-  J -->|Approved within limits| H
-  I -->|Blocked, rejected, or conditional| K[Recovery action: questions, evidence, owner, draft-only output]
-  J -->|Blocked, rejected, or conditional| K
-  H --> L{Validate state}
-  L -->|Valid final state| M[Final approved copy / release package]
-  L -->|Invalid transition, stale approval, conflict, or missing owner| K
-  K --> C
-  M -->|New change or reopened approval| B
-  classDef source fill:#eef6ff,stroke:#3778c2,color:#102a43;
-  classDef gate fill:#fff7e6,stroke:#c97a12,color:#3d2600;
-  classDef output fill:#eefaf0,stroke:#2f8f46,color:#12351d;
-  classDef final fill:#e8fff4,stroke:#15803d,color:#052e16;
-  class A source;
-  class D,G,I,J,K,L gate;
-  class B,C,E,F,H output;
-  class M final;
+  A[Workflow state and domain policy] --> B[Bounded assignment]
+  B --> C[Execution supervisor]
+  C --> D[Native tools or explicit handoff]
+  C --> E[Optional Herdr adapter]
+  D --> F[Result and readback evidence]
+  E --> F
+  F --> G[Supervisor verification]
+  G --> H[Workflow gate validation]
+  H --> A

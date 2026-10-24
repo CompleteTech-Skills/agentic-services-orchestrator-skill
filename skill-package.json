@@ -6,12 +6,15 @@
   "kind": "orchestrator",
   "entrypoints": [
     "scripts/render_pdf.py",
-    "scripts/skill_library.py"
+    "scripts/skill_library.py",
+    "scripts/orchestration.py"
   ],
   "example_inputs": [
     "references/completetech-services-workflow.yaml",
+    "references/hiring-pipeline-workflow.yaml",
+    "references/software-delivery-workflow.yaml",
     "assets/examples/example.md"
   ],
-  "network_mode": "local",
+  "network_mode": "operator-selected-hosts",
   "private": false
 }

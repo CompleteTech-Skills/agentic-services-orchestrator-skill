@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill/result.schema.json",
+  "title": "Execution observation and result, version 1",
+  "description": "Submitted execution evidence, never an approval or direct workflow transition. The coordinator validates evidence against the assigned revision and current workflow authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "workflow_id", "track_id", "run_id", "assignment_id",
+    "assignment_revision", "result_id", "observed_status", "owner", "observed_at",
+    "produced_artifacts", "validation", "reviews", "external_operations", "blockers",
+    "pending_actions", "proposed_transition", "evidence", "stop_reason"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "workflow_id": {"$ref": "#/$defs/text"},
+    "track_id": {"$ref": "#/$defs/text"},
+    "run_id": {"$ref": "#/$defs/text"},
+    "assignment_id": {"$ref": "#/$defs/text"},
+    "assignment_revision": {"type": "integer", "minimum": 1},
+    "result_id": {"$ref": "#/$defs/text"},
+    "observed_status": {
+      "enum": ["submitted", "acknowledged", "progressing", "review-pending", "blocked", "stopped", "failed", "completed"]
+    },
+    "owner": {"$ref": "#/$defs/text"},
+    "observed_at": {"$ref": "#/$defs/timestamp"},
+    "produced_artifacts": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["artifact", "version", "path", "source_artifacts"],
+        "properties": {
+          "artifact": {"$ref": "#/$defs/text"},
+          "version": {"$ref": "#/$defs/text"},
+          "path": {"$ref": "#/$defs/text"},
+          "source_artifacts": {"$ref": "#/$defs/artifactVersions"}
+        }
+      }
+    },
+    "validation": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["criterion", "passed", "evidence", "artifact_versions"],
+        "properties": {
+          "criterion": {"$ref": "#/$defs/text"},
+          "passed": {"type": "boolean"},
+          "evidence": {"$ref": "#/$defs/text"},
+          "artifact_versions": {"$ref": "#/$defs/artifactVersions"}
+        }
+      }
+    },
+    "reviews": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["reviewer", "independent", "passed", "evidence", "artifact_versions"],
+        "properties": {
+          "reviewer": {"$ref": "#/$defs/text"},
+          "independent": {"type": "boolean"},
+          "passed": {"type": "boolean"},
+          "evidence": {"$ref": "#/$defs/text"},
+          "artifact_versions": {"$ref": "#/$defs/artifactVersions"}
+        }
+      }
+    },
+    "external_operations": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["operation_id", "kind", "status", "receipt", "revision"],
+        "properties": {
+          "operation_id": {"$ref": "#/$defs/text"},
+          "kind": {"$ref": "#/$defs/text"},
+          "status": {"enum": ["planned", "uncertain", "succeeded", "failed", "not-performed"]},
+          "receipt": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+          "revision": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]}
+        }
+      }
+    },
+    "blockers": {"$ref": "#/$defs/texts"},
+    "pending_actions": {"$ref": "#/$defs/texts"},
+    "proposed_transition": {"anyOf": [{"$ref": "#/$defs/transition"}, {"type": "null"}]},
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["accepted_assignment_digest", "work", "effective_runtime", "endpoint"],
+      "properties": {
+        "accepted_assignment_digest": {
+          "anyOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]
+        },
+        "work": {"$ref": "#/$defs/texts"},
+        "effective_runtime": {
+          "type": "object",
+          "description": "Observed capabilities and role, model, limit, native-session, and native-goal settings. Requested settings alone are not evidence."
+        },
+        "endpoint": {
+          "anyOf": [
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["kind", "verified", "revision", "receipt"],
+              "properties": {
+                "kind": {"enum": ["task", "implementation", "pr", "merge", "deploy"]},
+                "verified": {"type": "boolean"},
+                "revision": {"$ref": "#/$defs/text"},
+                "receipt": {"$ref": "#/$defs/text"}
+              }
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "stop_reason": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "texts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+    "timestamp": {"type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$"},
+    "artifactVersion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact", "version"],
+      "properties": {"artifact": {"$ref": "#/$defs/text"}, "version": {"$ref": "#/$defs/text"}}
+    },
+    "artifactVersions": {
+      "type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/artifactVersion"}
+    },
+    "transition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {"from": {"$ref": "#/$defs/text"}, "to": {"$ref": "#/$defs/text"}}
+    }
+  }
+}

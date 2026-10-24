@@ -4,6 +4,14 @@ This reference defines the canonical variable set for generating a complete Comp
 
 Use this file as the orchestrator's shared source of truth when passing context between skills. Individual skills should receive only the subset they need, but variable names should stay stable across the workflow.
 
+These are legacy business-generation variables and illustrative synthetic facts.
+They are not executable assignments or current approval evidence. Preserve their
+field names when adding stable IDs, revisions, scoped approval references, and
+transition policy as described in [migration](migration.md). The workflow record
+remains the sole authority for business status and approvals; execution records
+reference it. Full-lifecycle fields below apply only when that lifecycle work is
+requested, not to every bounded task or non-software workflow.
+
 ## Lifecycle Coverage
 
 Default path: Discovery -> Proposal -> Contract -> Invoice -> Delivery -> Approval/Risk Triage -> Customer Success -> Case Study / Proof -> Certificate -> Email -> Envelope

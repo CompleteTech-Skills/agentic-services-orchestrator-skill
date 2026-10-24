@@ -35,7 +35,7 @@ Worked example of the CompleteTech LLC agentic services lifecycle for one engage
 ## 3. Routing Logic
 
 - Select the earliest missing lifecycle artifact unless the user requests a specific support output.
-- Invoke security review before launch, new tools, external actions, billing, or public proof.
+- Route commercial, legal, billing, recipient and public-use approvals to their owners; invoke security review for sensitive data, permissions, production impact or confidentiality risk.
 - Use email only for message copy; use envelope only for packaging and delivery-readiness.
 - Return a handoff package: artifact paths, decisions, open questions, blockers, approvals, next owner.
 

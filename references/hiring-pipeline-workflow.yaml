@@ -163,3 +163,12 @@ validation_rules:
   - unresolved_conflict
   - terminal_state_with_open_blockers
   - external_action_without_approval_evidence
+
+# Non-software example: no repository, coding agent, or Git evidence is required.
+execution_rules:
+  - from: role_intake
+    to: sourcing
+    required_approvals: [hiring_manager_approval]
+    required_facts: [role.ready_for_sourcing]
+    required_checks: [role_brief_verified]
+    independent_review: false

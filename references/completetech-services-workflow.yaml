@@ -241,3 +241,13 @@ validation_rules:
   - unresolved_conflict
   - terminal_state_with_open_blockers
   - external_action_without_approval_evidence
+
+# Additive executable policy. Other narrative routes remain available to manual
+# skill coordination, but require an explicit reviewed rule before helper use.
+execution_rules:
+  - from: discovery
+    to: proposal
+    required_approvals: [artifact_acceptance]
+    required_facts: [discovery.ready_for_proposal]
+    required_checks: [facts_verified]
+    independent_review: false

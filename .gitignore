@@ -27,3 +27,9 @@ secrets.json
 preview/
 output/
 *.tmp
+
+# Private orchestration state, SQLite sidecars, and runtime handoffs.
+.orchestration/
+runtime-records/
+*.sqlite*
+*.db*

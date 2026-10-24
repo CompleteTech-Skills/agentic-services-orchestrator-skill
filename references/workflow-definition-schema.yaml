@@ -93,6 +93,19 @@ workflow_definition_schema:
     required_fields: []
     terminal_states: []
     validation_rules: []
+    execution_rules: []
+
+  executable_extension:
+    description: Additive opt-in rules enforced by scripts/orchestration.py; narrative policy is not executable code.
+    rule_fields: [from, to, required_approvals, required_facts, required_checks, independent_review]
+    required_facts: Dot paths under project_state.known_facts; each value must be the boolean true, not a string or inferred fact.
+    required_approvals: Keys in the existing workflow approvals map; current revision, scope, and artifact bindings are checked.
+    required_checks: Named passing result checks, validated by the execution supervisor.
+    independent_review: Requires an approved reviewer distinct from the implementer when true.
+    unmapped_transitions: Manual instructional routing remains supported; the executable coordinator rejects unmapped transitions.
+    contracts:
+      assignment: references/assignment.schema.json
+      result: references/result.schema.json
 
   validation_rules:
     - id: invalid_transition

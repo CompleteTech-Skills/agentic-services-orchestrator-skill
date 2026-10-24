@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "repository": "example-owner/example-repository",
+  "scope": "Resolve the selected issue with regression coverage and independent review.",
+  "operation": "implement",
+  "delivery": "implementation",
+  "control": "dispatch",
+  "permission": "inherit",
+  "authority": {
+    "implementation": "Example only: replace with the actual current user instruction."
+  },
+  "target": {
+    "herdr_session": "default"
+  },
+  "models": {
+    "coordinator": "gpt-6.1-sol",
+    "worker": "claude-sonnet-5-5",
+    "fallback_worker": "gpt-6.1-sol",
+    "fallback_when": "capacity",
+    "reviewer": "gpt-6-astra",
+    "effort": "high",
+    "tier": "default",
+    "levels": 3,
+    "max_workers": 2
+  },
+  "limits": {
+    "disk_reserve_gib": 8,
+    "pid_admission_fraction": 0.6,
+    "max_heavy_jobs": 1,
+    "original_cutoff_utc": null,
+    "checkpoint_seconds": 120
+  },
+  "acceptance": [],
+  "escalation": {
+    "route": "manual-handoff"
+  }
+}

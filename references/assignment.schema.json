@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill/assignment.schema.json",
+  "title": "Bounded execution assignment, version 1",
+  "description": "A workflow-authorized execution request. Approval references point to workflow-owned records; runtime configuration conveys no business authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "workflow_id", "workflow_revision", "track_id", "run_id",
+    "assignment_id", "revision", "owner", "scope", "dependencies", "input_artifacts",
+    "expected_outputs", "acceptance_criteria", "authorization", "runtime", "endpoint",
+    "mode", "stopping_conditions", "independent_review", "required_checks", "proposed_transition"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "workflow_id": {"$ref": "#/$defs/text"},
+    "workflow_revision": {"type": "integer", "minimum": 1},
+    "track_id": {"$ref": "#/$defs/text"},
+    "run_id": {"$ref": "#/$defs/text"},
+    "assignment_id": {"$ref": "#/$defs/text"},
+    "revision": {"type": "integer", "minimum": 1},
+    "owner": {"$ref": "#/$defs/text"},
+    "scope": {"$ref": "#/$defs/text"},
+    "dependencies": {"$ref": "#/$defs/texts"},
+    "input_artifacts": {
+      "type": "array", "uniqueItems": true,
+      "items": {"$ref": "#/$defs/artifactVersion"}
+    },
+    "expected_outputs": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["artifact", "acceptance_criteria"],
+        "properties": {
+          "artifact": {"$ref": "#/$defs/text"},
+          "acceptance_criteria": {"$ref": "#/$defs/nonemptyTexts"}
+        }
+      }
+    },
+    "acceptance_criteria": {"$ref": "#/$defs/nonemptyTexts"},
+    "authorization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope", "provenance", "approval_refs", "expires_at"],
+      "properties": {
+        "scope": {"$ref": "#/$defs/text"},
+        "provenance": {"$ref": "#/$defs/text"},
+        "approval_refs": {
+          "type": "array", "uniqueItems": true,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["approval_id", "revision"],
+            "properties": {
+              "approval_id": {"$ref": "#/$defs/text"},
+              "revision": {"type": "integer", "minimum": 1}
+            }
+          }
+        },
+        "expires_at": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "runtime": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "adapter", "required_capabilities", "role_config", "limits", "deadline",
+        "native_session_id", "native_goal_id"
+      ],
+      "properties": {
+        "adapter": {"enum": ["native", "handoff", "herdr"]},
+        "required_capabilities": {"$ref": "#/$defs/texts"},
+        "role_config": {
+          "type": "object",
+          "description": "Requested roles, models, reasoning effort, reviewer independence, and fallback policy. The adapter must report effective settings instead of assuming these requests took effect."
+        },
+        "limits": {
+          "type": "object", "additionalProperties": false,
+          "required": ["max_concurrency", "max_delegation_depth"],
+          "properties": {
+            "max_concurrency": {"type": "integer", "minimum": 1},
+            "max_delegation_depth": {"type": "integer", "minimum": 0},
+            "max_tokens": {"type": "integer", "minimum": 1},
+            "max_cost": {"type": "number", "minimum": 0}
+          }
+        },
+        "deadline": {"$ref": "#/$defs/timestamp"},
+        "native_session_id": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]},
+        "native_goal_id": {"anyOf": [{"$ref": "#/$defs/text"}, {"type": "null"}]}
+      }
+    },
+    "endpoint": {"enum": ["task", "implementation", "pr", "merge", "deploy"]},
+    "mode": {"enum": ["dispatch", "supervise"]},
+    "stopping_conditions": {"$ref": "#/$defs/nonemptyTexts"},
+    "independent_review": {"type": "boolean"},
+    "required_checks": {"$ref": "#/$defs/texts"},
+    "proposed_transition": {
+      "anyOf": [{"$ref": "#/$defs/transition"}, {"type": "null"}]
+    }
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "texts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+    "nonemptyTexts": {"allOf": [{"$ref": "#/$defs/texts"}], "minItems": 1},
+    "timestamp": {
+      "type": "string", "format": "date-time", "pattern": "(?:Z|\\+00:00)$",
+      "description": "UTC timestamp with an explicit Z or +00:00 suffix."
+    },
+    "artifactVersion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact", "version"],
+      "properties": {"artifact": {"$ref": "#/$defs/text"}, "version": {"$ref": "#/$defs/text"}}
+    },
+    "transition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {"from": {"$ref": "#/$defs/text"}, "to": {"$ref": "#/$defs/text"}}
+    }
+  }
+}

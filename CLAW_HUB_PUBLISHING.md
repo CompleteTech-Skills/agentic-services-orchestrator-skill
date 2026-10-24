@@ -18,7 +18,7 @@ The ClawHub bundle is intended to include text-based skill material only:
 
 ## Excluded From ClawHub
 
-`.clawhubignore` excludes binary and generated assets from the publish candidate, including PDFs, PNG previews, DOCX files, fonts, logos, `preview/`, `output/`, caches, virtual environments, local env files, and temporary files.
+`.clawhubignore` excludes binary and generated assets from the publish candidate, including PDFs, PNG previews, DOCX files, fonts, logos, `preview/`, `output/`, caches, virtual environments, local env files, temporary files, SQLite databases/sidecars, `.orchestration/`, and `runtime-records/`. Keep custom private state paths outside the checkout; ignore patterns cannot identify arbitrary sensitive files.
 
 Those files remain part of the GitHub repository for brand presentation, examples, local demos, and generated artifact previews. They are not part of the ClawHub text bundle.
 
@@ -34,6 +34,8 @@ Runtime requirements are declared in `SKILL.md` under `metadata.openclaw`.
 - PDF/generator skills declare `reportlab` where PDF rendering is used.
 - The contract skill declares `jinja2`.
 - `pyyaml` is declared so the included quality/audit validator can parse YAML metadata.
+- `jsonschema` validates the bundled assignment/result contracts locally. SQLite persistence uses the Python standard library.
+- Native and Herdr runtime control are optional selected capabilities, not installation requirements. Local workflow processing and explicit handoffs work offline; native callbacks or configured remote session tools may use authorized network services. The manifest reflects this optional behavior as `operator-selected-hosts`.
 - Optional PNG preview dependencies such as `pypdfium2` and `pillow` are GitHub/local-demo conveniences, not required for the ClawHub core workflow unless a user intentionally runs PNG preview generation.
 
 ## Local Readiness Check
@@ -42,6 +44,7 @@ Run before publishing:
 
 ```bash
 python3 scripts/validate_quality.py
+python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 The validator checks lint, Python compilation, structured-file parsing, Mermaid rendering, smoke tests, Pyright where configured, and ClawHub bundle readiness. It does not publish to ClawHub.

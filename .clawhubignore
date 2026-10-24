@@ -39,3 +39,9 @@ desktop.ini
 
 # Development-only QA entry point; public package keeps runtime renderers only.
 scripts/validate_quality.py
+
+# Private orchestration state and runtime handoffs are never registry material.
+.orchestration/
+runtime-records/
+*.sqlite*
+*.db*

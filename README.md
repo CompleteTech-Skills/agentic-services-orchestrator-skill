@@ -1,4 +1,4 @@
-**CompleteTech LLC Skills** · [Start here](ONBOARDING.md) · [Agent instructions](SKILL.md) · [Skill library](https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill/blob/main/references/skill-family.md) · [Contributing](CONTRIBUTING.md)
+**CompleteTech LLC Skills** · [Start here](ONBOARDING.md) · [Agent instructions](SKILL.md) · [Skill library](references/skill-family.md) · [Contributing](CONTRIBUTING.md)
 
 # Agentic Services Orchestrator Skill
 
@@ -9,120 +9,101 @@
   </picture>
 </p>
 
-A schema-driven Codex workflow orchestrator with a CompleteTech LLC agentic services adapter as the default workflow.
+Coordinate workflow stages and approvals, supervise bounded assignments, and verify
+results before advancing. CompleteTech services is the default domain; software
+delivery and a non-software hiring example use the same core. Native agent tools,
+explicit handoffs, and optional Herdr controls are separate runtime choices.
 
-## About
+## Structure
 
-Part of the CompleteTech LLC agentic services skill library. This skill coordinates workflow routing without replacing specialist templates, guardrails, or approval boundaries. The core is universal: it loads a workflow definition, updates `project_state`, routes by policy, logs events, validates state, and then returns final output or a recovery path. The CompleteTech services lifecycle remains the built-in/default adapter.
+Workflow state owns business status, artifact relationships, and approvals.
+Execution state owns assignments, runtime ownership, progress, and completion
+evidence. The local coordinator stores both in separate SQLite records with revision
+checks. An agent's success report returns to the supervisor for verification, then
+to workflow coordination for current gate validation.
 
-## OpenClaw / ClawHub Metadata
-
-- Skill key: `agentic-services-orchestrator-skill`
-- Version-ready metadata: `1.0.3`
-- Homepage: https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill
-- README: https://github.com/CompleteTech-LLC/agentic-services-orchestrator-skill#readme
-- Runtime binaries: `python3`
-- Python packages: `reportlab==4.5.1`, `pyyaml==6.0.3` (optional PNG preview: `pypdfium2==5.8.0`, `pillow==12.2.0`)
-- Intended registry/discovery tags: `latest`, `complete-tech`, `codex-skill`, `agentic-development`, `agentic-workflows`, `orchestration`, `skill-routing`, `lifecycle`, `pdf`, `pdf-generator`
-- License: repository code, templates, and documentation use MIT; prepared for ClawHub publishing, publication is a separate, approved step (see `CLAW_HUB_PUBLISHING.md`).
-- Brand assets: CompleteTech LLC names, logos, seals, and brand assets are reserved; see `BRAND_ASSETS.md`.
-
-## Workflow Diagram
-
-Source: [assets/diagrams/orchestration-workflow.mmd](assets/diagrams/orchestration-workflow.mmd).
+[Architecture and boundaries](references/orchestration-architecture.md) explains
+implemented behavior and limits. [Runtime adapters](references/runtime-adapters.md)
+describes callback bindings and Herdr preparation. [Migration](references/migration.md)
+preserves existing `project_state` and specialist entry points. The optional
+[Herdr helper and references](adapters/herdr/README.md) are bundled here; a separate
+repository is no longer required.
 
 ```mermaid
 flowchart LR
-  A[Request, artifact, or client change] --> B[Load workflow definition / adapter]
-  B --> C[Update project_state]
-  C --> D{Route by policy}
-  D --> E[Active tracks]
-  E --> F[Specialist or adapter action]
-  F --> G{Approval / risk triage}
-  G -->|No gate needed| H[Event log]
-  G -->|Owner approval needed| I[Applicable owner approval]
-  G -->|Security-sensitive| J[Security review]
-  I -->|Approved within limits| H
-  J -->|Approved within limits| H
-  I -->|Blocked, rejected, or conditional| K[Recovery action: questions, evidence, owner, draft-only output]
-  J -->|Blocked, rejected, or conditional| K
-  H --> L{Validate state}
-  L -->|Valid final state| M[Final approved copy / release package]
-  L -->|Invalid transition, stale approval, conflict, or missing owner| K
-  K --> C
-  M -->|New change or reopened approval| B
-  classDef source fill:#eef6ff,stroke:#3778c2,color:#102a43;
-  classDef gate fill:#fff7e6,stroke:#c97a12,color:#3d2600;
-  classDef output fill:#eefaf0,stroke:#2f8f46,color:#12351d;
-  classDef final fill:#e8fff4,stroke:#15803d,color:#052e16;
-  class A source;
-  class D,G,I,J,K,L gate;
-  class B,C,E,F,H output;
-  class M final;
+  A[Workflow state and domain policy] --> B[Bounded assignment]
+  B --> C[Execution supervisor]
+  C --> D[Native tools or explicit handoff]
+  C --> E[Optional Herdr adapter]
+  D --> F[Result and readback evidence]
+  E --> F
+  F --> G[Supervisor verification]
+  G --> H[Workflow gates]
+  H --> A
 ```
 
-## What It Does
+## Start
 
-- Loads workflow schemas and adapters from `references/`.
-- Uses `references/completetech-services-workflow.yaml` as the default CompleteTech services adapter.
-- Chooses and sequences the right specialist, owner, or adapter action based on policy and `project_state`.
-- Keeps specialist boundaries clear across discovery, email, proposal, contract, invoice, delivery, security review, customer success, proof, and certificate work.
-- Preserves facts, events, approvals, blockers, artifacts, and open questions during handoff.
-- Treats security review as optional and only for security-sensitive gates; commercial, legal, billing, recipient, proof, and client-authority gates stay with their owners.
-
-## Contents
-
-- `SKILL.md` - orchestration instructions, routing guide, boundary rules, and common multi-skill workflows.
-- `agents/openai.yaml` - OpenAI agent metadata.
-- `assets/diagrams/orchestration-workflow.mmd` - Mermaid source for the orchestration workflow diagram.
-- `references/workflow-definition-schema.yaml` - universal workflow adapter schema and validation rules.
-- `references/completetech-services-workflow.yaml` - default CompleteTech services workflow adapter.
-- `references/hiring-pipeline-workflow.yaml` - small non-services adapter example.
-- `references/orchestration-architecture.md` - universal architecture, adapter model, responsibility matrix, and examples.
-- `references/skill-layout-standardization.md` - cross-skill repository shell audit and intentional differences.
-- `scripts/render_pdf.py` - branded CompleteTech PDF generator (Markdown -> PDF + optional PNG preview).
-- `requirements.txt` - Python dependencies for branded PDF rendering.
-
-## Quick Start
-
-Load the skill when work spans multiple stages, owners, adapters, approvals, or artifacts. Use `project_state.workflow_type` to select an adapter; when it is missing, the orchestrator defaults to `completetech_services`.
-
-## Example
-
-![Engagement Orchestration Overview preview](assets/examples/example.png)
-
-Full-document **branded PDF** rendered from the generated artifact: [example.pdf](assets/examples/example.pdf). Markdown source: [example.md](assets/examples/example.md).
-
-**Orchestration overview: one engagement routed across the full skill library**
-
-- Lifecycle routing table mapping each stage to its specialist skill and approval gate.
-- Worked `project_state` handoff for the Northwind support-triage pilot.
-- Routing logic, sequencing, and boundary reminders in one branded overview.
-
-Generate the branded PDF (artifacts are delivered as PDFs, not raw Markdown):
+Python 3.12 is the CI baseline. Install dependencies before offline use:
 
 ```bash
-pip install -r requirements.txt
-python3 scripts/render_pdf.py --markdown assets/examples/example.md \
-  --out assets/examples/example.pdf --png assets/examples/example.png \
-  --logo assets/logo.png --title "Engagement Orchestration Overview" \
-  --doc-type "SERVICES ORCHESTRATION" --subtitle "Worked example: <b>Northwind Trading Co.</b> pilot" --meta "DOCUMENT=ORCH-2026-001" --meta "DATE=2026-05-24" --meta "ENGAGEMENT=Support triage pilot"
+python -m pip install -r requirements.txt
+python scripts/validate_package.py
+python examples/run_demo.py --out /tmp/orchestration-demo
 ```
 
-## Brand Notes
+On Windows choose a new writable private directory such as
+`C:/Temp/orchestration-demo`, outside any enclosing Git checkout. The six-scenario
+demo uses synthetic facts and simulated agent/remote receipts. It does not launch
+client workflows, agents, merges, or deployments. Read [examples](examples/README.md)
+for CLI receipt shapes and recovery commands.
 
-Use a direct, practical, low-hype tone. The orchestrator coordinates the lifecycle; it does not replace specialist templates or invent missing facts.
+## Components
 
-## Runtime Permissions
+| Path | Implemented responsibility |
+|---|---|
+| `SKILL.md` | Concise entry point and reference selection |
+| `scripts/orchestration.py` | SQLite workflow/execution records, revisions, dispatch intent, result verification, gated transitions and recovery |
+| `scripts/contracts.py` | JSON Schema validation and canonical digests |
+| `scripts/runtime_adapters.py` | Native callbacks, explicit handoff, optional bundled Herdr preparation |
+| `references/*-workflow.yaml` | Services, hiring and software domain policy |
+| `references/assignment.schema.json`, `references/result.schema.json` | Machine-readable contracts |
+| `adapters/herdr/` | Offline preparation helper, example, regressions and focused session/delivery/recovery references |
+| `scripts/render_pdf.py` | Existing human-facing Markdown/PDF/optional PNG renderer |
+| `scripts/skill_library.py` | Existing read-only catalog, install planning and sibling audit |
 
-This skill is a local workflow-orchestration and document-rendering workflow. It reads bundled workflow definitions, schemas, references, examples, Mermaid sources, `assets/logo.png`, and user-provided project-state/workflow facts. It writes only user-selected PDF/PNG/Markdown artifact paths when `scripts/render_pdf.py` is explicitly run.
+The services delivery specialist continues to own kickoff, evaluation, runbooks,
+and closeout artifacts. The execution supervisor assigns and monitors agents.
+See [specialist ownership](references/services-specialists.md).
 
-It does not send emails, call external workflow systems, call Mautic or other CRMs, contact certificate services, require credential access, create persistence, escalate privileges, perform destructive file operations, or run background services.
+## Files, network and approvals
 
-## Network Boundary
+Local validation, coordination, persistence, handoff preparation and PDF rendering
+work offline after installation. Only explicitly selected, authorized runtime
+bindings may access external agent tools, repositories or hosts. The package does
+not install a scheduler or background service. Live observations, authority and
+remote receipts must come from trusted operators/tools.
 
-This skill is local-only. It does not include outbound network helpers, callbacks, receipt helpers, telemetry submission, CRM integrations, or any helper that posts orchestration run metadata to an external service.
+Keep selected state files and handoffs private and outside Git. JSON/YAML and SQLite
+remain operational artifacts; branded PDFs are appropriate human-facing documents.
+Generating a document or passing a test grants no business, publication, merge or
+deployment authority. [Brand assets](BRAND_ASSETS.md) have separate rights from the
+[MIT code license](LICENSE). Text-only registry bundles omit binary brand assets.
 
-## License
+## Validation and packaging
 
-Code, templates, and documentation are licensed under the MIT License. CompleteTech LLC names, logos, seals, and brand assets are reserved and are not licensed for reuse except to identify this project. See `LICENSE` and `BRAND_ASSETS.md`.
+```bash
+python -m unittest discover -s tests -p 'test_*.py' -v
+python scripts/validate_package.py
+python scripts/validate_quality.py
+```
+
+See [Quality](QUALITY.md) and the [validation report](references/integration-validation.md)
+for actual results, independent review and limitations. New checks cover scoped
+authority, exact artifact revisions, independent review, uncertain effects,
+duplicate/stale work, concurrent dispatch and interrupted-run recovery without
+Herdr. The existing full-checkout package contract and sibling catalog remain.
+
+Activation key: `agentic-services-orchestrator-skill`; version `1.1.0`.
+Runtime: Python 3; dependencies are pinned in `requirements.txt`. Registry
+publication is separate from local validation; see [ClawHub publishing](CLAW_HUB_PUBLISHING.md).

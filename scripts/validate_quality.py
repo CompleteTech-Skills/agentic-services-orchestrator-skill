@@ -22,7 +22,8 @@ except ImportError:  # pragma: no cover - reported clearly at runtime
     yaml = None
 
 ROOT = Path(__file__).resolve().parents[1]
-SKIP_DIRS = {".git", ".venv", "venv", "env", "ENV", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"}
+SKIP_DIRS = {".git", ".venv", "venv", "env", "ENV", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache",
+             ".orchestration", "runtime-records"}
 URL_SAFE_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".ico", ".pdf", ".docx", ".ttf", ".otf", ".woff", ".woff2"}
@@ -36,6 +37,7 @@ DEFAULT_CLAWHUBIGNORE_PATTERNS = [
     "preview/", "output/", "__pycache__/", "*.py[cod]", "*$py.class", ".mypy_cache/", ".pytest_cache/", ".ruff_cache/",
     ".venv/", "venv/", "env/", "ENV/", ".env", ".env.*", "secrets.json", "*_secret.ini", "*_local.ini", "*.tmp",
     ".DS_Store", "Thumbs.db", "desktop.ini",
+    ".orchestration/", "runtime-records/", "*.sqlite*", "*.db*",
 ]
 
 
@@ -258,9 +260,12 @@ def validate_clawhub_bundle() -> None:
         assert_dependency(openclaw, "jinja2")
     if re.search(r"(?m)^\s*import\s+yaml\b", py_text):
         assert_dependency(openclaw, "pyyaml")
+    if re.search(r"(?m)^\s*(?:from|import)\s+jsonschema\b", py_text):
+        assert_dependency(openclaw, "jsonschema")
 
     patterns = ignore_patterns()
-    for required_pattern in ["*.png", "*.pdf", "*.docx", "*.ttf", "preview/", "output/", ".env", "*.tmp"]:
+    for required_pattern in ["*.png", "*.pdf", "*.docx", "*.ttf", "preview/", "output/", ".env", "*.tmp",
+                             ".orchestration/", "runtime-records/", "*.sqlite*", "*.db*"]:
         if required_pattern not in patterns:
             raise RuntimeError(f".clawhubignore missing required pattern: {required_pattern}")
     candidate_files = publish_candidate_files(patterns)
